@@ -1,45 +1,61 @@
-# Chrome Extension Template
+# Copy Title and URL - Chrome Extension
 
-A basic Chrome extension template with popup, content script, and background service worker.
+現在のウェブページのタイトルとURLを同時にクリップボードにコピーするChrome拡張機能です。
 
-## Features
+## 機能
 
-- Popup interface with HTML/CSS/JS
-- Content script for web page interaction
-- Background service worker for background tasks
-- Chrome storage API integration
-- Message passing between components
+- 📋 ポップアップからワンクリックでタイトルとURLをコピー
+- 🖱️ 右クリックメニューからもコピー可能
+- 🔔 コピー完了時に通知表示
+- 🎨 モダンで使いやすいUI
 
-## File Structure
+## ファイル構造
 
 ```
 chrom_extension/
-├── manifest.json          # Extension configuration
-├── popup.html            # Popup interface
-├── popup.js              # Popup functionality
-├── content.js            # Content script
-├── background.js         # Background service worker
-├── icons/                # Extension icons
+├── manifest.json          # 拡張機能の設定
+├── popup.html            # ポップアップUI
+├── popup.js              # ポップアップ機能
+├── background.js         # バックグラウンドサービスワーカー
+├── icons/                # 拡張機能アイコン
 │   ├── icon16.png
 │   ├── icon48.png
 │   └── icon128.png
-└── README.md             # This file
+└── README.md             # このファイル
 ```
 
-## Installation
+## インストール方法
 
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Load unpacked"
-4. Select this folder
+1. Chromeで `chrome://extensions/` を開く
+2. 「デベロッパーモード」を有効にする
+3. 「パッケージ化されていない拡張機能を読み込む」をクリック
+4. このフォルダを選択
 
-## Development
+## 使用方法
 
-- Edit the files as needed
-- Reload the extension in Chrome after making changes
-- Check the browser console for debugging information
+### 方法1: ポップアップから
+1. 拡張機能のアイコンをクリック
+2. 「タイトルとURLをコピー」ボタンをクリック
 
-## Permissions
+### 方法2: 右クリックメニューから
+1. 任意のウェブページで右クリック
+2. 「タイトルとURLをコピー」を選択
 
-- `activeTab`: Access to the current active tab
-- `storage`: Access to Chrome storage API
+## コピー形式
+
+```
+ページタイトル
+https://example.com/page-url
+```
+
+## 権限
+
+- `contextMenus`: 右クリックメニューの追加
+- `activeTab`: 現在のタブへのアクセス
+- `scripting`: スクリプトの実行
+- `notifications`: 通知の表示
+
+## 開発
+
+- ファイルを編集後、Chromeの拡張機能管理画面で「更新」ボタンをクリック
+- ブラウザのコンソールでデバッグ情報を確認可能
