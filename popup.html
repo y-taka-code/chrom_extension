@@ -7,29 +7,60 @@
       width: 300px;
       padding: 20px;
       font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
     }
     .container {
       text-align: center;
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h3 {
+      color: #333;
+      margin-bottom: 20px;
     }
     button {
       background-color: #4CAF50;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
-      margin: 5px;
+      margin: 10px 0;
+      font-size: 14px;
+      width: 100%;
+      transition: background-color 0.3s;
     }
     button:hover {
       background-color: #45a049;
+    }
+    button:active {
+      background-color: #3d8b40;
+    }
+    .info {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #e8f5e8;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #2e7d32;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #666;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h3>My Chrome Extension</h3>
-    <button id="actionBtn">Click Me!</button>
-    <p id="status">Ready</p>
+    <h3>📋 Copy Title & URL</h3>
+    <button id="copyBtn">タイトルとURLをコピー</button>
+    <div class="info">
+      💡 右クリックメニューからも使用できます
+    </div>
+    <p id="status" class="status">準備完了</p>
   </div>
   <script src="popup.js"></script>
 </body>
