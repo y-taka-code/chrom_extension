@@ -17,23 +17,58 @@ document.addEventListener('DOMContentLoaded', function() {
     copyBtn.disabled = true;
     copyBtn.textContent = 'コピー中...';
     
-    // Send message to background script
-    chrome.runtime.sendMessage({action: 'copyTitleAndURL'}, function(response) {
-      if (response && response.success) {
-        status.textContent = '✅ コピー完了！';
-        copyBtn.textContent = '✅ コピー完了';
+    // Try direct copy first (faster)
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (tabs[0]) {
+        const tab = tabs[0];
+        const textToCopy = `${tab.title}\n${tab.url}`;
         
-        // Reset button after 2 seconds
-        setTimeout(function() {
-          copyBtn.disabled = false;
-          copyBtn.textContent = 'タイトルとURLをコピー';
-          status.textContent = '準備完了';
-        }, 2000);
-      } else {
-        status.textContent = '❌ コピーに失敗しました';
-        copyBtn.disabled = false;
-        copyBtn.textContent = 'タイトルとURLをコピー';
+        // Use modern Clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(textToCopy).then(function() {
+            showSuccess();
+          }).catch(function() {
+            // Fallback to background script
+            useBackgroundCopy();
+          });
+        } else {
+          // Fallback to background script
+          useBackgroundCopy();
+        }
       }
     });
+    
+    function showSuccess() {
+      status.textContent = '✅ コピー完了！';
+      copyBtn.textContent = '✅ コピー完了';
+      
+      // Reset button after 1 second (faster reset)
+      setTimeout(function() {
+        copyBtn.disabled = false;
+        copyBtn.textContent = 'タイトルとURLをコピー';
+        status.textContent = '準備完了';
+      }, 1000);
+    }
+    
+    function useBackgroundCopy() {
+      // Send message to background script with timeout
+      const timeoutId = setTimeout(function() {
+        status.textContent = '❌ タイムアウト';
+        copyBtn.disabled = false;
+        copyBtn.textContent = 'タイトルとURLをコピー';
+      }, 2000); // 2秒でタイムアウト
+      
+      chrome.runtime.sendMessage({action: 'copyTitleAndURL'}, function(response) {
+        clearTimeout(timeoutId);
+        
+        if (response && response.success) {
+          showSuccess();
+        } else {
+          status.textContent = '❌ コピーに失敗しました';
+          copyBtn.disabled = false;
+          copyBtn.textContent = 'タイトルとURLをコピー';
+        }
+      });
+    }
   });
 });

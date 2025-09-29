@@ -38,18 +38,23 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 function copyTitleAndURL(tab) {
   const textToCopy = `${tab.title}\n${tab.url}`;
   
-  // Use the Clipboard API
+  // Use the Clipboard API with simplified error handling
   navigator.clipboard.writeText(textToCopy).then(function() {
     console.log('Title and URL copied to clipboard');
-    
-    // Show notification (optional)
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icons/icon48.png',
-      title: 'コピー完了',
-      message: 'タイトルとURLをクリップボードにコピーしました'
-    });
+    // Remove notification to improve performance
   }).catch(function(err) {
     console.error('Failed to copy to clipboard:', err);
+    // Fallback: try using document.execCommand (deprecated but faster)
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = textToCopy;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      console.log('Fallback copy successful');
+    } catch (fallbackErr) {
+      console.error('Fallback copy failed:', fallbackErr);
+    }
   });
 }
