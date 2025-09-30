@@ -12,6 +12,11 @@ chrome.runtime.onInstalled.addListener(function(details) {
     title: "タイトルとURLをコピー",
     contexts: ["page"]
   });
+  
+  // Log available commands for debugging
+  chrome.commands.getAll(function(commands) {
+    console.log('Available commands:', commands);
+  });
 });
 
 // Handle context menu clicks
@@ -38,12 +43,17 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
 chrome.commands.onCommand.addListener(function(command) {
   console.log('Command received:', command);
   if (command === "copy-title-url") {
+    console.log('Copy command triggered via shortcut');
+    
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs[0]) {
-        console.log('Shortcut triggered, tab:', tabs[0].url);
+      console.log('Active tabs found:', tabs.length);
+      
+      if (tabs && tabs.length > 0) {
+        const tab = tabs[0];
+        console.log('Shortcut triggered, tab:', tab.url, 'title:', tab.title);
         
         // Check if current tab is a chrome:// page
-        if (isChromeInternalPage(tabs[0].url)) {
+        if (isChromeInternalPage(tab.url)) {
           console.log('Cannot copy from chrome:// page via shortcut');
           return;
         }
@@ -52,10 +62,14 @@ chrome.commands.onCommand.addListener(function(command) {
         chrome.storage.sync.get(['copyFormat'], function(result) {
           const format = result.copyFormat || 'plain';
           console.log('Using format for shortcut:', format);
-          copyTitleAndURL(tabs[0], format);
+          copyTitleAndURL(tab, format);
         });
+      } else {
+        console.error('No active tab found');
       }
     });
+  } else {
+    console.log('Unknown command:', command);
   }
 });
 

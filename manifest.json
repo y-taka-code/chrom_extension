@@ -25,5 +25,8 @@
       },
       "description": "タイトルとURLをコピー"
     }
-  }
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ]
 }
