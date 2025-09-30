@@ -54,25 +54,56 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 function copyTitleAndURL(tab, format = 'plain') {
   const textToCopy = formatText(tab.title, tab.url, format);
   
-  // Use the Clipboard API with simplified error handling
-  navigator.clipboard.writeText(textToCopy).then(function() {
+  // Use chrome.scripting to inject a content script for clipboard access
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    function: copyToClipboard,
+    args: [textToCopy]
+  }).then(() => {
     console.log('Title and URL copied to clipboard with format:', format);
-    // Remove notification to improve performance
-  }).catch(function(err) {
+  }).catch((err) => {
     console.error('Failed to copy to clipboard:', err);
-    // Fallback: try using document.execCommand (deprecated but faster)
-    try {
-      const textArea = document.createElement('textarea');
-      textArea.value = textToCopy;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      console.log('Fallback copy successful');
-    } catch (fallbackErr) {
-      console.error('Fallback copy failed:', fallbackErr);
-    }
   });
+}
+
+// Function to be injected into the page for clipboard access
+function copyToClipboard(text) {
+  // Try modern Clipboard API first
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      console.log('Clipboard API copy successful');
+    }).catch(() => {
+      // Fallback to execCommand
+      fallbackCopy(text);
+    });
+  } else {
+    // Fallback to execCommand
+    fallbackCopy(text);
+  }
+}
+
+// Fallback copy function using execCommand
+function fallbackCopy(text) {
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    if (successful) {
+      console.log('Fallback copy successful');
+    } else {
+      console.error('Fallback copy failed');
+    }
+  } catch (err) {
+    console.error('Fallback copy error:', err);
+  }
 }
 
 // Function to format text based on selected format
