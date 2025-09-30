@@ -20,7 +20,7 @@
     "copy-title-url": {
       "suggested_key": {
         "default": "Ctrl+Shift+C",
-        "mac": "Command+Shift+C"
+        "mac": "Ctrl+Shift+C"
       },
       "description": "タイトルとURLをコピー"
     }
