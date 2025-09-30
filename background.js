@@ -17,24 +17,41 @@ chrome.runtime.onInstalled.addListener(function(details) {
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId === "copyTitleAndURL") {
-    copyTitleAndURL(tab);
+    console.log('Context menu clicked, tab:', tab.url);
+    
+    // Check if current tab is a chrome:// page
+    if (isChromeInternalPage(tab.url)) {
+      console.log('Cannot copy from chrome:// page via context menu');
+      return;
+    }
+    
+    // Get saved format preference, default to 'plain'
+    chrome.storage.sync.get(['copyFormat'], function(result) {
+      const format = result.copyFormat || 'plain';
+      console.log('Using format for context menu:', format);
+      copyTitleAndURL(tab, format);
+    });
   }
 });
 
 // Handle keyboard shortcuts
 chrome.commands.onCommand.addListener(function(command) {
+  console.log('Command received:', command);
   if (command === "copy-title-url") {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
+        console.log('Shortcut triggered, tab:', tabs[0].url);
+        
         // Check if current tab is a chrome:// page
         if (isChromeInternalPage(tabs[0].url)) {
-          console.log('Cannot copy from chrome:// page');
+          console.log('Cannot copy from chrome:// page via shortcut');
           return;
         }
         
         // Get saved format preference, default to 'plain'
         chrome.storage.sync.get(['copyFormat'], function(result) {
           const format = result.copyFormat || 'plain';
+          console.log('Using format for shortcut:', format);
           copyTitleAndURL(tabs[0], format);
         });
       }
@@ -64,7 +81,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 // Function to copy title and URL to clipboard
 function copyTitleAndURL(tab, format = 'plain') {
+  console.log('copyTitleAndURL called with:', {title: tab.title, url: tab.url, format: format});
   const textToCopy = formatText(tab.title, tab.url, format);
+  console.log('Text to copy:', textToCopy);
   
   // Use chrome.scripting to inject a content script for clipboard access
   chrome.scripting.executeScript({
