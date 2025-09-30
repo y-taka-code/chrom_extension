@@ -26,6 +26,12 @@ chrome.commands.onCommand.addListener(function(command) {
   if (command === "copy-title-url") {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
+        // Check if current tab is a chrome:// page
+        if (isChromeInternalPage(tabs[0].url)) {
+          console.log('Cannot copy from chrome:// page');
+          return;
+        }
+        
         // Get saved format preference, default to 'plain'
         chrome.storage.sync.get(['copyFormat'], function(result) {
           const format = result.copyFormat || 'plain';
@@ -41,6 +47,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'copyTitleAndURL') {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
+        // Check if current tab is a chrome:// page
+        if (isChromeInternalPage(tabs[0].url)) {
+          sendResponse({success: false, error: 'chrome:// page not supported'});
+          return;
+        }
+        
         const format = request.format || 'plain';
         copyTitleAndURL(tabs[0], format);
         sendResponse({success: true});
@@ -104,6 +116,15 @@ function fallbackCopy(text) {
   } catch (err) {
     console.error('Fallback copy error:', err);
   }
+}
+
+// Function to check if URL is a Chrome internal page
+function isChromeInternalPage(url) {
+  return url.startsWith('chrome://') || 
+         url.startsWith('chrome-extension://') || 
+         url.startsWith('moz-extension://') ||
+         url.startsWith('edge://') ||
+         url.startsWith('about:');
 }
 
 // Function to format text based on selected format

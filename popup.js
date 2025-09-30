@@ -19,7 +19,19 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     if (tabs[0]) {
       const tab = tabs[0];
+      
+      // Check if current tab is a Chrome internal page
+      if (isChromeInternalPage(tab.url)) {
+        status.textContent = '⚠️ Chrome内部ページでは使用できません';
+        status.style.color = '#ff6b6b';
+        copyBtn.disabled = true;
+        copyBtn.textContent = '使用不可';
+        copyBtn.style.backgroundColor = '#ccc';
+        return;
+      }
+      
       status.textContent = `現在のページ: ${tab.title.substring(0, 30)}${tab.title.length > 30 ? '...' : ''}`;
+      status.style.color = '#666';
       updatePreview(tab);
     }
   });
@@ -115,6 +127,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (response && response.success) {
           showSuccess();
+        } else if (response && response.error === 'chrome:// page not supported') {
+          status.textContent = '⚠️ Chrome内部ページでは使用できません';
+          copyBtn.disabled = false;
+          copyBtn.textContent = 'タイトルとURLをコピー';
         } else {
           status.textContent = '❌ コピーに失敗しました';
           copyBtn.disabled = false;
@@ -138,6 +154,14 @@ document.addEventListener('DOMContentLoaded', function() {
         default:
           return `${title}\n${url}`;
       }
+    }
+    
+    function isChromeInternalPage(url) {
+      return url.startsWith('chrome://') || 
+             url.startsWith('chrome-extension://') || 
+             url.startsWith('moz-extension://') ||
+             url.startsWith('edge://') ||
+             url.startsWith('about:');
     }
   });
 });
