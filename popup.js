@@ -3,14 +3,61 @@
 document.addEventListener('DOMContentLoaded', function() {
   const copyBtn = document.getElementById('copyBtn');
   const status = document.getElementById('status');
+  const formatPreview = document.getElementById('formatPreview');
+  const formatRadios = document.querySelectorAll('input[name="format"]');
+
+  // Load saved format preference
+  chrome.storage.sync.get(['copyFormat'], function(result) {
+    if (result.copyFormat) {
+      const radio = document.querySelector(`input[value="${result.copyFormat}"]`);
+      if (radio) radio.checked = true;
+    }
+    updatePreview();
+  });
 
   // Get current tab info and display it
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     if (tabs[0]) {
       const tab = tabs[0];
       status.textContent = `現在のページ: ${tab.title.substring(0, 30)}${tab.title.length > 30 ? '...' : ''}`;
+      updatePreview(tab);
     }
   });
+
+  // Add event listeners for format selection
+  formatRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      updatePreview();
+      // Save format preference
+      chrome.storage.sync.set({copyFormat: this.value});
+    });
+  });
+
+  function updatePreview(tab) {
+    const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+    const title = tab ? tab.title : 'ページタイトル';
+    const url = tab ? tab.url : 'https://example.com';
+    
+    let preview = '';
+    switch(selectedFormat) {
+      case 'plain':
+        preview = `${title}\n${url}`;
+        break;
+      case 'markdown':
+        preview = `[${title}](${url})`;
+        break;
+      case 'html':
+        preview = `<a href="${url}">${title}</a>`;
+        break;
+      case 'title-only':
+        preview = title;
+        break;
+      case 'url-only':
+        preview = url;
+        break;
+    }
+    formatPreview.textContent = `プレビュー: ${preview}`;
+  }
 
   copyBtn.addEventListener('click', function() {
     status.textContent = 'コピー中...';
@@ -21,7 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
         const tab = tabs[0];
-        const textToCopy = `${tab.title}\n${tab.url}`;
+        const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+        const textToCopy = formatText(tab.title, tab.url, selectedFormat);
         
         // Use modern Clipboard API
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -58,7 +106,11 @@ document.addEventListener('DOMContentLoaded', function() {
         copyBtn.textContent = 'タイトルとURLをコピー';
       }, 2000); // 2秒でタイムアウト
       
-      chrome.runtime.sendMessage({action: 'copyTitleAndURL'}, function(response) {
+      const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+      chrome.runtime.sendMessage({
+        action: 'copyTitleAndURL',
+        format: selectedFormat
+      }, function(response) {
         clearTimeout(timeoutId);
         
         if (response && response.success) {
@@ -69,6 +121,23 @@ document.addEventListener('DOMContentLoaded', function() {
           copyBtn.textContent = 'タイトルとURLをコピー';
         }
       });
+    }
+    
+    function formatText(title, url, format) {
+      switch(format) {
+        case 'plain':
+          return `${title}\n${url}`;
+        case 'markdown':
+          return `[${title}](${url})`;
+        case 'html':
+          return `<a href="${url}">${title}</a>`;
+        case 'title-only':
+          return title;
+        case 'url-only':
+          return url;
+        default:
+          return `${title}\n${url}`;
+      }
     }
   });
 });

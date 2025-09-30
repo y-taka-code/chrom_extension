@@ -51,11 +51,67 @@
       font-size: 12px;
       color: #666;
     }
+    .format-selector {
+      margin: 15px 0;
+      text-align: left;
+    }
+    .format-selector label {
+      display: block;
+      margin: 8px 0;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    .format-selector label:hover {
+      background-color: #f0f0f0;
+    }
+    .format-selector input[type="radio"] {
+      margin-right: 8px;
+    }
+    .format-preview {
+      margin-top: 10px;
+      padding: 8px;
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #666;
+      border-left: 3px solid #4CAF50;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h3>📋 Copy Title & URL</h3>
+    
+    <div class="format-selector">
+      <label>
+        <input type="radio" name="format" value="plain" checked>
+        📝 プレーンテキスト
+      </label>
+      <label>
+        <input type="radio" name="format" value="markdown">
+        📄 Markdown
+      </label>
+      <label>
+        <input type="radio" name="format" value="html">
+        🌐 HTML
+      </label>
+      <label>
+        <input type="radio" name="format" value="title-only">
+        📌 タイトルのみ
+      </label>
+      <label>
+        <input type="radio" name="format" value="url-only">
+        🔗 URLのみ
+      </label>
+    </div>
+    
+    <div class="format-preview" id="formatPreview">
+      プレビュー: ページタイトル<br>https://example.com
+    </div>
+    
     <button id="copyBtn">タイトルとURLをコピー</button>
     <div class="info">
       💡 右クリックメニューからも使用できます

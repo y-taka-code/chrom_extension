@@ -26,7 +26,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'copyTitleAndURL') {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
-        copyTitleAndURL(tabs[0]);
+        const format = request.format || 'plain';
+        copyTitleAndURL(tabs[0], format);
         sendResponse({success: true});
       }
     });
@@ -35,12 +36,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 // Function to copy title and URL to clipboard
-function copyTitleAndURL(tab) {
-  const textToCopy = `${tab.title}\n${tab.url}`;
+function copyTitleAndURL(tab, format = 'plain') {
+  const textToCopy = formatText(tab.title, tab.url, format);
   
   // Use the Clipboard API with simplified error handling
   navigator.clipboard.writeText(textToCopy).then(function() {
-    console.log('Title and URL copied to clipboard');
+    console.log('Title and URL copied to clipboard with format:', format);
     // Remove notification to improve performance
   }).catch(function(err) {
     console.error('Failed to copy to clipboard:', err);
@@ -57,4 +58,22 @@ function copyTitleAndURL(tab) {
       console.error('Fallback copy failed:', fallbackErr);
     }
   });
+}
+
+// Function to format text based on selected format
+function formatText(title, url, format) {
+  switch(format) {
+    case 'plain':
+      return `${title}\n${url}`;
+    case 'markdown':
+      return `[${title}](${url})`;
+    case 'html':
+      return `<a href="${url}">${title}</a>`;
+    case 'title-only':
+      return title;
+    case 'url-only':
+      return url;
+    default:
+      return `${title}\n${url}`;
+  }
 }
