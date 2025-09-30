@@ -21,6 +21,21 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
   }
 });
 
+// Handle keyboard shortcuts
+chrome.commands.onCommand.addListener(function(command) {
+  if (command === "copy-title-url") {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (tabs[0]) {
+        // Get saved format preference, default to 'plain'
+        chrome.storage.sync.get(['copyFormat'], function(result) {
+          const format = result.copyFormat || 'plain';
+          copyTitleAndURL(tabs[0], format);
+        });
+      }
+    });
+  }
+});
+
 // Handle messages from popup
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'copyTitleAndURL') {

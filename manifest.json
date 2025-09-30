@@ -15,5 +15,14 @@
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "commands": {
+    "copy-title-url": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+C",
+        "mac": "Command+Shift+C"
+      },
+      "description": "タイトルとURLをコピー"
+    }
   }
 }
